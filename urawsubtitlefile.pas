@@ -1,6 +1,6 @@
 unit uRawSubtitleFile;
 { base class for a text based subtitle file. has some abstract methods
-  for descendants classes. look at uSubripFile for example.
+  for descendant classes. look at uSubripFile for example.
 
   Copyright (C) 2017 Mohammadreza Bahrami m.audio91@gmail.com
 
