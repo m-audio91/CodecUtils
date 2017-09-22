@@ -122,6 +122,7 @@ begin
     end;
   end;
   SetLength(Result, j);
+  if Length(Result) < 1 then Exit;
   if Result[0].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble then
     Result[0].TimeSlice.Value.StartPos.Value := ARange.Value.StartPos.Value;
   if Result[j-1].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.EndPos.ValueAsDouble then
