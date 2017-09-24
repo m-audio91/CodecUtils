@@ -261,12 +261,12 @@ begin
     if i > 0 then
       ts.Value.StartPos.Value := ARanges.Values[i-1].Value.EndPos.Value;
     ts.Value.EndPos.Value := ARanges.Values[i].Value.StartPos.Value;
-    Offset := Offset + ts.Duration.ValueAsDouble;
+    Offset := Offset +ts.Duration.ValueAsDouble;
 
     for j := 0 to High(dlgsr) do
     begin
       dlgs[k] := dlgsr[j];
-      dlgs[k].TimeSlice.Delay := -Offset + ARanges.Values[i].Delay;
+      dlgs[k].TimeSlice.Delay := -Offset +ARanges.Values[i].Delay;
       Inc(k);
     end;
   end;
@@ -274,7 +274,7 @@ begin
 
   if AStartTime > 0 then
     for i := 0 to k-1 do
-      dlgs[i].TimeSlice.Delay := dlgs[i].TimeSlice.Delay + AStartTime;
+      dlgs[i].TimeSlice.Delay := dlgs[i].TimeSlice.Delay +AStartTime;
 
   for i := 0 to k-1 do
   begin
