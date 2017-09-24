@@ -68,8 +68,8 @@ type
     procedure LoadFromString(const AContents: String); virtual; abstract;
     procedure SaveToFile(const AFileName: String);
     procedure SaveToString(out AContents: String); virtual; abstract;
-    function AddNew: Integer;
-    function Add(AValue: T): Integer;
+    function NewDialog: Integer;
+    function AddDialog(AValue: T): Integer;
     procedure AddDialogs(AValue: TGenericSubtitleDialogs);
     procedure RemoveDialog(AIndex: Integer);
     function Count: Integer;
@@ -199,15 +199,15 @@ begin
   end;
 end;
 
-function TGenericSubtitleFile.AddNew: Integer;
+function TGenericSubtitleFile.NewDialog: Integer;
 begin
   SetLength(FList, Length(FList)+1);
   Result := High(FList);
 end;
 
-function TGenericSubtitleFile.Add(AValue: T): Integer;
+function TGenericSubtitleFile.AddDialog(AValue: T): Integer;
 begin
-  Result := AddNew;
+  Result := NewDialog;
   FList[Result] := AValue;
   FTimeSlice.Value.StartPos.Value := AValue.TimeSlice.Value.StartPos.Value;
   FTimeSlice.Value.EndPos.Value := AValue.TimeSlice.Value.EndPos.Value;
@@ -220,7 +220,7 @@ var
 begin
   if Length(AValue) < 1 then Exit;
   for i := 0 to High(AValue) do
-    Add(AValue[i]);
+    AddDialog(AValue[i]);
 end;
 
 procedure TGenericSubtitleFile.RemoveDialog(AIndex: Integer);
