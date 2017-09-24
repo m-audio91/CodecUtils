@@ -157,17 +157,13 @@ var
   i: Integer;
 begin
   for i := 0 to High(FList)-1 do
-  begin
     if FList[i].TimeSlice.Value.EndPos.ValueAsDouble
     > FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
       FList[i].TimeSlice.Value.EndPos.ValueAsDouble :=
         FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
-  end;
   for i := High(FList) downto 0 do
-  begin
     if not FList[i].TimeSlice.Valid then
       RemoveDialog(i);
-  end;
 end;
 
 procedure TGenericSubtitleFile.LoadFromFile(const AFileName: String);
