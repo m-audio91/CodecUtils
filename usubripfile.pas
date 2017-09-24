@@ -34,13 +34,17 @@ unit uSubripFile;
 interface
 
 uses
-  Classes, SysUtils, CommonStrUtils, uRawSubtitleFile;
+  Classes, SysUtils, CommonStrUtils, uGenericSubtitleFile;
 
 type
 
+  { TCustomSubripFile }
+
+  TCustomSubripFile = specialize TGenericSubtitleFile<TPlainSubtitleDialog>;
+
   { TSubripFile }
 
-  TSubripFile = class(TRawSubtitleFile)
+  TSubripFile = class(TCustomSubripFile)
   public
     procedure LoadFromString(const AContents: String); override;
     procedure SaveToString(out AContents: String); override;
