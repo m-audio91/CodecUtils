@@ -55,7 +55,6 @@ implementation
 
 const
   SubripTimeSliceSep = ' --> ';
-  //InitSTS = '00:00:00,000 --> 00:00:00,000';
 
 { TSubripFile }
 
@@ -91,14 +90,14 @@ begin
       if k >= 0 then
       begin
         repeat
-          FList[j].Text := FList[j].Text + sa[l] + LineEnding;
+          FList[j].Text := FList[j].Text +sa[l] +LineEnding;
           Inc(l);
         until l >= k-1;
       end
       else
       begin
         repeat
-          FList[j].Text := FList[j].Text + sa[l] + LineEnding;
+          FList[j].Text := FList[j].Text +sa[l] +LineEnding;
           Inc(l);
         until l > High(sa);
       end;
@@ -116,9 +115,9 @@ begin
   AContents := EmptyStr;
   for i := 0 to High(FList) do
   begin
-    AContents := AContents + (i+1).ToString + LineEnding;
-    AContents := AContents + FList[i].TimeSlice.ValueAsString + LineEnding;
-    AContents := AContents + FList[i].Text;
+    AContents := AContents +(i+1).ToString +LineEnding;
+    AContents := AContents +FList[i].TimeSlice.ValueAsString +LineEnding;
+    AContents := AContents +FList[i].Text;
   end;
 end;
 
