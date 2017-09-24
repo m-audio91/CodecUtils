@@ -1,5 +1,6 @@
 unit uGenericSubtitleFile;
-{ Subrip file (srt) decoder and encoder.
+{ base generic class for a text based subtitle file. has some abstract methods
+  for descendant classes. look at uSubripFile for example.
 
   Copyright (C) 2017 Mohammadreza Bahrami m.audio91@gmail.com
 
