@@ -62,7 +62,7 @@ type
     procedure SetValue(AValue: TGenericSubtitleDialogs);
   public
     procedure Clear;
-    procedure Cleanup;
+    procedure Cleanup; virtual;
     procedure LoadFromFile(const AFileName: String);
     procedure LoadFromString(const AContents: String); virtual; abstract;
     procedure SaveToFile(const AFileName: String);
@@ -70,7 +70,7 @@ type
     function AddNew: Integer;
     function Add(AValue: T): Integer;
     procedure AddDialogs(AValue: TGenericSubtitleDialogs);
-    procedure Delete(AIndex: Integer);
+    procedure RemoveDialog(AIndex: Integer);
     function Count: Integer;
     function MakeNewFromRanges(ARanges: TTimeSliceList; AStartTime: Double
       = 0): TGenericSubtitleDialogs;
@@ -165,7 +165,7 @@ begin
   for i := High(FList) downto 0 do
   begin
     if not FList[i].TimeSlice.Valid then
-      Delete(i);
+      RemoveDialog(i);
   end;
 end;
 
@@ -222,7 +222,7 @@ begin
     Add(AValue[i]);
 end;
 
-procedure TGenericSubtitleFile.Delete(AIndex: Integer);
+procedure TGenericSubtitleFile.RemoveDialog(AIndex: Integer);
 var
   i: Integer;
 begin
