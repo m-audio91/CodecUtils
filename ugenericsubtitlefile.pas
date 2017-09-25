@@ -73,8 +73,8 @@ type
     procedure AddDialogs(AValue: TGenericSubtitleDialogs);
     procedure RemoveDialog(AIndex: Integer);
     function Count: Integer;
-    function MakeNewFromRanges(ARanges: TTimeSliceList; AStartTime: Double
-      = 0): TGenericSubtitleDialogs;
+    function MakeNewFromRanges(ARanges: TTimeSliceList; AFinalStartOffset
+      : Double = 0): TGenericSubtitleDialogs;
     procedure FixOverlapsForward;
     procedure FixOverlapsBackward;
   public
@@ -234,7 +234,7 @@ begin
 end;
 
 function TGenericSubtitleFile.MakeNewFromRanges(ARanges: TTimeSliceList;
-  AStartTime: Double): TGenericSubtitleDialogs;
+  AFinalStartOffset: Double = 0): TGenericSubtitleDialogs;
 var
   dlgs, dlgsr: TGenericSubtitleDialogs;
   ts: TTimeSlice;
@@ -268,9 +268,9 @@ begin
   end;
   SetLength(dlgs, k);
 
-  if AStartTime > 0 then
+  if AFinalStartOffset > 0 then
     for i := 0 to k-1 do
-      dlgs[i].TimeSlice.Delay := dlgs[i].TimeSlice.Delay +AStartTime;
+      dlgs[i].TimeSlice.Delay := dlgs[i].TimeSlice.Delay +AFinalStartOffset;
 
   for i := 0 to k-1 do
   begin
