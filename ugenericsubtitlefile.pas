@@ -126,11 +126,13 @@ begin
     end;
   end;
   SetLength(Result, j);
-  if Length(Result) < 1 then Exit;
-  if Result[0].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble then
-    Result[0].TimeSlice.Value.StartPos.Value := ARange.Value.StartPos.Value;
-  if Result[j-1].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.EndPos.ValueAsDouble then
-    Result[j-1].TimeSlice.Value.EndPos.Value := ARange.Value.EndPos.Value;
+  for i := 0 to j-1 do
+  begin
+    if Result[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble then
+      Result[i].TimeSlice.Value.StartPos.Value := ARange.Value.StartPos.Value
+    else if Result[i].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.EndPos.ValueAsDouble then
+      Result[i].TimeSlice.Value.EndPos.Value := ARange.Value.EndPos.Value;
+  end;
 end;
 
 procedure TGenericSubtitleFile.SetValue(AValue: TGenericSubtitleDialogs);
