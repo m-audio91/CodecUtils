@@ -75,6 +75,8 @@ type
     function Count: Integer;
     function MakeNewFromRanges(ARanges: TTimeSliceList; AStartTime: Double
       = 0): TGenericSubtitleDialogs;
+    procedure FixOverlapsForward;
+    procedure FixOverlapsBackward;
   public
     property Dialogs[Index: Integer]: T read GetDialog write SetDialog; default;
     property Value: TGenericSubtitleDialogs read FList write SetValue;
@@ -156,11 +158,6 @@ procedure TGenericSubtitleFile.Cleanup;
 var
   i: Integer;
 begin
-  for i := 0 to High(FList)-1 do
-    if FList[i].TimeSlice.Value.EndPos.ValueAsDouble
-    > FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
-      FList[i].TimeSlice.Value.EndPos.ValueAsDouble :=
-        FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
   for i := High(FList) downto 0 do
     if not FList[i].TimeSlice.Valid then
       RemoveDialog(i);
@@ -280,6 +277,28 @@ begin
   end;
 
   Result := dlgs;
+end;
+
+procedure TGenericSubtitleFile.FixOverlapsForward;
+var
+  i: Integer;
+begin
+  for i := 0 to High(FList)-1 do
+    if FList[i].TimeSlice.Value.EndPos.ValueAsDouble
+    > FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
+      FList[i].TimeSlice.Value.EndPos.ValueAsDouble :=
+        FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
+end;
+
+procedure TGenericSubtitleFile.FixOverlapsBackward;
+var
+  i: Integer;
+begin
+  for i := High(FList) downto 1 do
+    if FList[i].TimeSlice.Value.StartPos.ValueAsDouble
+    < FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
+      FList[i].TimeSlice.Value.StartPos.ValueAsDouble :=
+        FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
 end;
 
 constructor TGenericSubtitleFile.Create;
