@@ -285,22 +285,22 @@ procedure TGenericSubtitleFile.FixOverlapsForward;
 var
   i: Integer;
 begin
-  for i := 0 to High(FList)-1 do
-    if FList[i].TimeSlice.Value.EndPos.ValueAsDouble
-    > FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
-      FList[i].TimeSlice.Value.EndPos.ValueAsDouble :=
-        FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
+  for i := High(FList) downto 1 do
+    if FList[i].TimeSlice.Value.StartPos.ValueAsDouble
+    < FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
+      FList[i].TimeSlice.Value.StartPos.ValueAsDouble :=
+        FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
 end;
 
 procedure TGenericSubtitleFile.FixOverlapsBackward;
 var
   i: Integer;
 begin
-  for i := High(FList) downto 1 do
-    if FList[i].TimeSlice.Value.StartPos.ValueAsDouble
-    < FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
-      FList[i].TimeSlice.Value.StartPos.ValueAsDouble :=
-        FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
+  for i := 0 to High(FList)-1 do
+    if FList[i].TimeSlice.Value.EndPos.ValueAsDouble
+    > FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
+      FList[i].TimeSlice.Value.EndPos.ValueAsDouble :=
+        FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
 end;
 
 constructor TGenericSubtitleFile.Create;
