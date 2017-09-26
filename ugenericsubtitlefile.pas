@@ -42,9 +42,8 @@ type
   { TPlainSubtitleDialog }
 
   TPlainSubtitleDialog = record
-    TimeSlice: TTimeSlice;
+    TimeSlice: TTimeSlice; //any subtitle dialog type should contain these field.
     Text: String;
-    // any dialog type should contain at least exactly these two fields.
   end;
 
   { TGenericSubtitleFile }
