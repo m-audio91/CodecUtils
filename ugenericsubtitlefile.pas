@@ -272,6 +272,7 @@ begin
   Result := nil;
   if not ARanges.Valid then Exit;
   if FCount < 1 then Exit;
+  ARanges.Initialize(FTimeSlice.TimeSliceFormat);
   SetLength(dlgs, FCount);
 
   k := 0;
