@@ -62,7 +62,8 @@ procedure TSubripFile.LoadFromString(const AContents: String);
 var
   sa: TStringArray;
   sl: TStringList;
-  i,j,k,l: Integer;
+  Dlg: TPlainSubtitleDialog;
+  i,j,k: Integer;
 begin
   if AContents = EmptyStr then Exit;
   if AContents.IndexOf(SubripTimeSliceSep) < 0 then Exit;
@@ -75,37 +76,35 @@ begin
     sl.Free;
   end;
   i := 0;
-  j := 0;
-  SetLength(FList, Length(sa) div 3);
+  Capacity := Length(sa) div 3;
   while i >= 0 do
   begin
     i := FindInArray(sa, SubripTimeSliceSep, i+1);
     if i >= 0 then
     begin
       FTimeSlice.ValueAsString := sa[i];
-      FList[j].TimeSlice := FTimeSlice;
-      FList[j].Text := EmptyStr;
-      l := i+1;
-      k := FindInArray(sa, SubripTimeSliceSep, l);
-      if k >= 0 then
+      Dlg.TimeSlice := FTimeSlice;
+      Dlg.Text := EmptyStr;
+      k := i+1;
+      j := FindInArray(sa, SubripTimeSliceSep, k);
+      if j >= 0 then
       begin
         repeat
-          FList[j].Text := FList[j].Text +sa[l] +LineEnding;
-          Inc(l);
-        until l >= k-1;
+          Dlg.Text := Dlg.Text +sa[k] +LineEnding;
+          Inc(k);
+        until k >= j-1;
       end
       else
       begin
         repeat
-          FList[j].Text := FList[j].Text +sa[l] +LineEnding;
-          Inc(l);
-        until l > High(sa);
+          Dlg.Text := Dlg.Text +sa[k] +LineEnding;
+          Inc(k);
+        until k > High(sa);
       end;
-      Inc(j);
+      AddDialog(Dlg);
       Inc(i);
     end;
   end;
-  SetLength(FList, j);
 end;
 
 procedure TSubripFile.SaveToString(out AContents: String);
@@ -113,11 +112,11 @@ var
   i: Integer;
 begin
   AContents := EmptyStr;
-  for i := 0 to High(FList) do
+  for i := 0 to Count-1 do
   begin
     AContents := AContents +(i+1).ToString +LineEnding;
-    AContents := AContents +FList[i].TimeSlice.ValueAsString +LineEnding;
-    AContents := AContents +FList[i].Text;
+    AContents := AContents +Dialogs[i].TimeSlice.ValueAsString +LineEnding;
+    AContents := AContents +Dialogs[i].Text;
   end;
 end;
 
