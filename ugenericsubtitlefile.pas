@@ -216,7 +216,6 @@ var
   s: String;
 begin
   SaveToString(s);
-  if s = EmptyStr then Exit;
   sl := TStringList.Create;
   try
     sl.Text := s;
