@@ -75,8 +75,8 @@ begin
   finally
     sl.Free;
   end;
-  i := 0;
   Capacity := Length(sa) div 3;
+  i := 0;
   while i >= 0 do
   begin
     i := FindInArray(sa, SubripTimeSliceSep, i+1);
@@ -87,22 +87,11 @@ begin
       Dlg.Text := EmptyStr;
       k := i+1;
       j := FindInArray(sa, SubripTimeSliceSep, k);
-      if j >= 0 then
-      begin
-        repeat
-          Dlg.Text := Dlg.Text +sa[k] +LineEnding;
-          Inc(k);
-        until k >= j-1;
-      end
-      else
-      begin
-        repeat
-          Dlg.Text := Dlg.Text +sa[k] +LineEnding;
-          Inc(k);
-        until k > High(sa);
-      end;
+      repeat
+        Dlg.Text := Dlg.Text +sa[k] +LineEnding;
+        Inc(k);
+      until (k > High(sa)) or (k >= j-1);
       AddDialog(Dlg);
-      Inc(i);
     end;
   end;
 end;
