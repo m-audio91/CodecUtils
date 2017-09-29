@@ -35,7 +35,7 @@ unit uGenericSubtitleFile;
 interface
 
 uses
-  Classes, SysUtils, uTimeSlice;  
+  Classes, SysUtils, uMinimalList, uTimeSlice;
 
 type
 
@@ -49,42 +49,31 @@ type
   { TGenericSubtitleFile }
 
   generic TGenericSubtitleFile<T> = class
-  public
-    type TGenericSubtitleDialogs = specialize TArray<T>;
-  strict private
-    FList: TGenericSubtitleDialogs;
   private
-    FCount: Integer;
+    type TGenericSubtitleDialogs = specialize TArray<T>;
+    type TCustomGenericSubtitleDialogsList = specialize TMinimalList<T>;
+    type TGenericSubtitleDialogsList = class(TCustomGenericSubtitleDialogsList)
+         private
+           procedure SetItem(AIndex: Integer; AItem: T); override;
+         end;
+  strict private
+    FDialogs: TGenericSubtitleDialogsList; 
     FTimeSlice: TTimeSlice;
-    procedure CheckIndex(AIndex: Integer); inline;
-    procedure CheckCapacity(Amount: Integer = 250);
-    function GetCapacity: Integer;
-    procedure SetCapacity(AValue: Integer);
-    function GetDialog(Index: Integer): T;
-    procedure SetDialog(Index: Integer; AValue: T);
+  private
     function DialogsInRange(ARange: TTimeSlice): TGenericSubtitleDialogs;
-    procedure SetValue(AValue: TGenericSubtitleDialogs);
-    function GetValue: TGenericSubtitleDialogs;
   public
-    procedure Clear;
     procedure Cleanup; virtual;
     procedure LoadFromFile(const AFileName: String);
     procedure LoadFromString(const AContents: String); virtual; abstract;
     procedure SaveToFile(const AFileName: String);
     procedure SaveToString(out AContents: String); virtual; abstract;
-    function NewDialog: Integer;
-    function AddDialog(AValue: T): Integer;
-    procedure AddDialogs(AValue: TGenericSubtitleDialogs);
-    procedure RemoveDialog(AIndex: Integer);
-    function Count: Integer;
-    property Capacity: Integer read GetCapacity write SetCapacity;
     function MakeNewFromRanges(ARanges: TTimeSliceList; AFinalStartOffset
       : Double = 0): TGenericSubtitleDialogs;
     procedure FixOverlapsForward;
     procedure FixOverlapsBackward;
   public
-    property Dialogs[Index: Integer]: T read GetDialog write SetDialog; default;
-    property Value: TGenericSubtitleDialogs read GetValue write SetValue;
+    property Dialogs: TGenericSubtitleDialogsList read FDialogs write FDialogs;
+    property TimeSlice: TTimeSlice read FTimeSlice write FTimeSlice;
     constructor Create; virtual;
     destructor Destroy; override;
   end; 
@@ -92,62 +81,39 @@ type
 
 implementation
 
+{ TGenericSubtitleFile.TGenericSubtitleDialogsList }
+
+procedure TGenericSubtitleFile.TGenericSubtitleDialogsList.SetItem(
+  AIndex: Integer; AItem: T);
+begin
+  inherited SetItem(AIndex, AItem);
+  if Assigned(Owner) then
+    with (Owner as TGenericSubtitleFile) do
+    begin
+      FTimeSlice.Value.StartPos.Value := AItem.TimeSlice.Value.StartPos.Value;
+      FTimeSlice.Value.EndPos.Value := AItem.TimeSlice.Value.EndPos.Value;
+      PItems[AIndex]^.TimeSlice := FTimeSlice;
+    end;
+end;
+
+
 { TGenericSubtitleFile }
-
-procedure TGenericSubtitleFile.CheckIndex(AIndex: Integer);
-begin
-  if (AIndex < Low(FList)) or (AIndex > FCount-1) then
-    raise EListError.Create('Out of bounds index');
-end;
-
-procedure TGenericSubtitleFile.CheckCapacity(Amount: Integer);
-begin
-  if (GetCapacity-FCount) < Amount then
-    SetCapacity(GetCapacity+Amount);
-end;
-
-function TGenericSubtitleFile.GetCapacity: Integer;
-begin
-  Result := Length(FList);
-end;
-
-procedure TGenericSubtitleFile.SetCapacity(AValue: Integer);
-begin
-  if AValue < 0 then
-    AValue := 0;
-  SetLength(FList, AValue);
-end;
-
-function TGenericSubtitleFile.GetDialog(Index: Integer): T;
-begin
-  CheckIndex(Index);
-  Result := FList[Index];
-end;
-
-procedure TGenericSubtitleFile.SetDialog(Index: Integer; AValue: T);
-begin
-  CheckIndex(Index);
-  FList[Index] := AValue;
-  FTimeSlice.Value.StartPos.Value := AValue.TimeSlice.Value.StartPos.Value;
-  FTimeSlice.Value.EndPos.Value := AValue.TimeSlice.Value.EndPos.Value;
-  FList[Index].TimeSlice := FTimeSlice;
-end;
 
 function TGenericSubtitleFile.DialogsInRange(ARange: TTimeSlice
   ): TGenericSubtitleDialogs;
 var
   i,j: Integer;
 begin
-  SetLength(Result, FCount);
+  SetLength(Result, FDialogs.Count);
   j := 0;
-  for i := 0 to FCount-1 do
+  for i := 0 to FDialogs.Count-1 do
   begin
-    if ((FList[i].TimeSlice.Value.StartPos.ValueAsDouble >= ARange.Value.StartPos.ValueAsDouble)
-      and (FList[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.EndPos.ValueAsDouble))
-    or ((FList[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble)
-      and (FList[i].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.StartPos.ValueAsDouble)) then
+    if ((FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble >= ARange.Value.StartPos.ValueAsDouble)
+      and (FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.EndPos.ValueAsDouble))
+    or ((FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble)
+      and (FDialogs[i].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.StartPos.ValueAsDouble)) then
     begin
-      Result[j] := FList[i];
+      Result[j] := FDialogs[i];
       Inc(j);
     end;
   end;
@@ -161,39 +127,13 @@ begin
   end;
 end;
 
-procedure TGenericSubtitleFile.SetValue(AValue: TGenericSubtitleDialogs);
-var
-  i: Integer;
-begin
-  Clear;
-  CheckCapacity(Length(AValue));
-  for i := 0 to High(AValue) do
-    AddDialog(AValue[i]);
-end;
-
-function TGenericSubtitleFile.GetValue: TGenericSubtitleDialogs;
-var
-  i: Integer;
-begin
-  SetLength(Result, FCount);
-  for i := 0 to FCount-1 do
-    Result[i] := FList[i];
-end;
-
-procedure TGenericSubtitleFile.Clear;
-begin
-  FList := nil;
-  FCount := 0;
-  SetCapacity(250);
-end;
-
 procedure TGenericSubtitleFile.Cleanup;
 var
   i: Integer;
 begin
-  for i := FCount-1 downto 0 do
-    if not FList[i].TimeSlice.Valid then
-      RemoveDialog(i);
+  for i := FDialogs.Count-1 downto 0 do
+    if not FDialogs[i].TimeSlice.Valid then
+      FDialogs.Remove(i);
 end;
 
 procedure TGenericSubtitleFile.LoadFromFile(const AFileName: String);
@@ -224,44 +164,8 @@ begin
   end;
 end;
 
-function TGenericSubtitleFile.NewDialog: Integer;
-begin
-  CheckCapacity;
-  Inc(FCount);
-  Result := FCount-1;
-end;
-
-function TGenericSubtitleFile.AddDialog(AValue: T): Integer;
-begin
-  Result := NewDialog;
-  SetDialog(Result, AValue);
-end;
-
-procedure TGenericSubtitleFile.AddDialogs(AValue: TGenericSubtitleDialogs);
-var
-  i: Integer;
-begin
-  for i := 0 to High(AValue) do
-    AddDialog(AValue[i]);
-end;
-
-procedure TGenericSubtitleFile.RemoveDialog(AIndex: Integer);
-var
-  i: Integer;
-begin
-  CheckIndex(AIndex);
-  for i := AIndex+1 to FCount-1 do
-    FList[i-1] := FList[i];
-  Dec(FCount);
-end;
-
-function TGenericSubtitleFile.Count: Integer;
-begin
-  Result := FCount;
-end;
-
 function TGenericSubtitleFile.MakeNewFromRanges(ARanges: TTimeSliceList;
-  AFinalStartOffset: Double = 0): TGenericSubtitleDialogs;
+  AFinalStartOffset: Double): TGenericSubtitleDialogs;
 var
   dlgs, dlgsr: TGenericSubtitleDialogs;
   ts: TTimeSlice;
@@ -270,9 +174,9 @@ var
 begin
   Result := nil;
   if not ARanges.Valid then Exit;
-  if FCount < 1 then Exit;
+  if Dialogs.Count < 1 then Exit;
   ARanges.Initialize(FTimeSlice.TimeSliceFormat);
-  SetLength(dlgs, FCount);
+  SetLength(dlgs, Dialogs.Count);
 
   k := 0;
   Offset := 0;
@@ -313,32 +217,32 @@ procedure TGenericSubtitleFile.FixOverlapsForward;
 var
   i: Integer;
 begin
-  for i := FCount-1 downto 1 do
-    if FList[i].TimeSlice.Value.StartPos.ValueAsDouble
-    < FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
-      FList[i].TimeSlice.Value.StartPos.ValueAsDouble :=
-        FList[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
+  for i := FDialogs.Count-1 downto 1 do
+    if FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble
+    < FDialogs[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
+      FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble :=
+        FDialogs[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
 end;
 
 procedure TGenericSubtitleFile.FixOverlapsBackward;
 var
   i: Integer;
 begin
-  for i := 0 to FCount-2 do
-    if FList[i].TimeSlice.Value.EndPos.ValueAsDouble
-    > FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
-      FList[i].TimeSlice.Value.EndPos.ValueAsDouble :=
-        FList[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
+  for i := 0 to FDialogs.Count-1 do
+    if FDialogs[i].TimeSlice.Value.EndPos.ValueAsDouble
+    > FDialogs[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
+      FDialogs[i].TimeSlice.Value.EndPos.ValueAsDouble :=
+        FDialogs[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
 end;
 
 constructor TGenericSubtitleFile.Create;
 begin
-  FCount := 0;
+  FDialogs := TGenericSubtitleDialogsList.Create(Self);
 end;
 
 destructor TGenericSubtitleFile.Destroy;
-begin 
-  FList := nil;
+begin
+  if Assigned(FDialogs) then FDialogs.Free;
   inherited Destroy;
 end;
 
