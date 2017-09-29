@@ -75,15 +75,15 @@ begin
   finally
     sl.Free;
   end;
-  Capacity := Length(sa) div 3;
+  Dialogs.Capacity := Length(sa) div 3;
   i := 0;
   while i >= 0 do
   begin
     i := FindInArray(sa, SubripTimeSliceSep, i+1);
     if i >= 0 then
     begin
-      FTimeSlice.ValueAsString := sa[i];
-      Dlg.TimeSlice := FTimeSlice;
+      TimeSlice.ValueAsString := sa[i];
+      Dlg.TimeSlice := TimeSlice;
       Dlg.Text := EmptyStr;
       k := i+1;
       j := FindInArray(sa, SubripTimeSliceSep, k);
@@ -91,7 +91,7 @@ begin
         Dlg.Text := Dlg.Text +sa[k] +LineEnding;
         Inc(k);
       until (k > High(sa)) or (k >= j-1);
-      AddDialog(Dlg);
+      Dialogs.Add(Dlg);
     end;
   end;
 end;
@@ -101,7 +101,7 @@ var
   i: Integer;
 begin
   AContents := EmptyStr;
-  for i := 0 to Count-1 do
+  for i := 0 to Dialogs.Count-1 do
   begin
     AContents := AContents +(i+1).ToString +LineEnding;
     AContents := AContents +Dialogs[i].TimeSlice.ValueAsString +LineEnding;
@@ -112,7 +112,7 @@ end;
 constructor TSubripFile.Create;
 begin
   inherited Create;
-  FTimeSlice.Initialize(3, ':', ',', SubripTimeSliceSep);
+  TimeSlice.Initialize(3, ':', ',', SubripTimeSliceSep);
 end;
 
 end.
