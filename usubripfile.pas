@@ -103,9 +103,9 @@ begin
   AContents := EmptyStr;
   for i := 0 to Dialogs.Count-1 do
   begin
-    AContents := AContents +(i+1).ToString +LineEnding;
-    AContents := AContents +Dialogs[i].TimeSlice.ValueAsString +LineEnding;
-    AContents := AContents +Dialogs[i].Text;
+    AContents := AContents +(i+1).ToString +LineEnding
+    +Dialogs[i].TimeSlice.ValueAsString +LineEnding
+    +Dialogs[i].Text;
   end;
 end;
 
