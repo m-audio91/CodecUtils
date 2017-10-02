@@ -39,10 +39,10 @@ uses
 
 type
 
-  { TPlainSubtitleDialog }
+  { TPlainSubtitleEvent }
 
-  TPlainSubtitleDialog = record
-    TimeSlice: TTimeSlice; //any subtitle dialog type should contain these field.
+  TPlainSubtitleEvent = record
+    TimeSlice: TTimeSlice; // <-- any subtitle event type should contain this.
     Text: String;
   end;
 
@@ -50,17 +50,17 @@ type
 
   generic TGenericSubtitleFile<T> = class
   private
-    type TGenericSubtitleDialogs = specialize TArray<T>;
-    type TCustomGenericSubtitleDialogsList = specialize TMinimalList<T>;
-    type TGenericSubtitleDialogsList = class(TCustomGenericSubtitleDialogsList)
+    type TGenericSubtitleEvents = specialize TArray<T>;
+    type TCustomGenericSubtitleEventList = specialize TMinimalList<T>;
+    type TGenericSubtitleEventList = class(TCustomGenericSubtitleEventList)
          private
            procedure SetItem(AIndex: Integer; AItem: T); override;
          end;
   strict private
-    FDialogs: TGenericSubtitleDialogsList; 
+    FEvents: TGenericSubtitleEventList;
     FTimeSlice: TTimeSlice;
   private
-    function DialogsInRange(ARange: TTimeSlice): TGenericSubtitleDialogs;
+    function EventsInRange(ARange: TTimeSlice): TGenericSubtitleEvents;
   public
     procedure Cleanup; virtual;
     procedure LoadFromFile(const AFileName: String);
@@ -68,11 +68,11 @@ type
     procedure SaveToFile(const AFileName: String);
     procedure SaveToString(out AContents: String); virtual; abstract;
     function MakeNewFromRanges(ARanges: TTimeSliceList; AFinalStartOffset
-      : Double = 0): TGenericSubtitleDialogs;
+      : Double = 0): TGenericSubtitleEvents;
     procedure FixOverlapsForward;
     procedure FixOverlapsBackward;
   public
-    property Dialogs: TGenericSubtitleDialogsList read FDialogs write FDialogs;
+    property Events: TGenericSubtitleEventList read FEvents write FEvents;
     property TimeSlice: TTimeSlice read FTimeSlice write FTimeSlice;
     constructor Create; virtual;
     destructor Destroy; override;
@@ -81,9 +81,9 @@ type
 
 implementation
 
-{ TGenericSubtitleFile.TGenericSubtitleDialogsList }
+{ TGenericSubtitleFile.TGenericSubtitleEventList }
 
-procedure TGenericSubtitleFile.TGenericSubtitleDialogsList.SetItem(
+procedure TGenericSubtitleFile.TGenericSubtitleEventList.SetItem(
   AIndex: Integer; AItem: T);
 begin
   inherited SetItem(AIndex, AItem);
@@ -99,21 +99,21 @@ end;
 
 { TGenericSubtitleFile }
 
-function TGenericSubtitleFile.DialogsInRange(ARange: TTimeSlice
-  ): TGenericSubtitleDialogs;
+function TGenericSubtitleFile.EventsInRange(ARange: TTimeSlice
+  ): TGenericSubtitleEvents;
 var
   i,j: Integer;
 begin
-  SetLength(Result, FDialogs.Count);
+  SetLength(Result, FEvents.Count);
   j := 0;
-  for i := 0 to FDialogs.Count-1 do
+  for i := 0 to FEvents.Count-1 do
   begin
-    if ((FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble >= ARange.Value.StartPos.ValueAsDouble)
-      and (FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.EndPos.ValueAsDouble))
-    or ((FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble)
-      and (FDialogs[i].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.StartPos.ValueAsDouble)) then
+    if ((FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble >= ARange.Value.StartPos.ValueAsDouble)
+      and (FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.EndPos.ValueAsDouble))
+    or ((FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble)
+      and (FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.StartPos.ValueAsDouble)) then
     begin
-      Result[j] := FDialogs[i];
+      Result[j] := FEvents[i];
       Inc(j);
     end;
   end;
@@ -131,9 +131,9 @@ procedure TGenericSubtitleFile.Cleanup;
 var
   i: Integer;
 begin
-  for i := FDialogs.Count-1 downto 0 do
-    if not FDialogs[i].TimeSlice.Valid then
-      FDialogs.Remove(i);
+  for i := FEvents.Count-1 downto 0 do
+    if not FEvents[i].TimeSlice.Valid then
+      FEvents.Remove(i);
 end;
 
 procedure TGenericSubtitleFile.LoadFromFile(const AFileName: String);
@@ -165,24 +165,24 @@ begin
 end;
 
 function TGenericSubtitleFile.MakeNewFromRanges(ARanges: TTimeSliceList;
-  AFinalStartOffset: Double): TGenericSubtitleDialogs;
+  AFinalStartOffset: Double): TGenericSubtitleEvents;
 var
-  dlgs, dlgsr: TGenericSubtitleDialogs;
+  dlgs, dlgsr: TGenericSubtitleEvents;
   ts: TTimeSlice;
   i,j,k: Integer;
   Offset: Double;
 begin
   Result := nil;
   if not ARanges.Valid then Exit;
-  if Dialogs.Count < 1 then Exit;
+  if Events.Count < 1 then Exit;
   ARanges.Initialize(FTimeSlice.TimeSliceFormat);
-  SetLength(dlgs, Dialogs.Count);
+  SetLength(dlgs, Events.Count);
 
   k := 0;
   Offset := 0;
   for i := 0 to ARanges.Count-1 do
   begin
-    dlgsr := DialogsInRange(ARanges.Values[i]);
+    dlgsr := EventsInRange(ARanges.Values[i]);
     if Length(dlgsr) < 1 then Continue;
 
     ts.Reset;
@@ -217,32 +217,32 @@ procedure TGenericSubtitleFile.FixOverlapsForward;
 var
   i: Integer;
 begin
-  for i := FDialogs.Count-1 downto 1 do
-    if FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble
-    < FDialogs[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
-      FDialogs[i].TimeSlice.Value.StartPos.ValueAsDouble :=
-        FDialogs[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
+  for i := FEvents.Count-1 downto 1 do
+    if FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble
+    < FEvents[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
+      FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble :=
+        FEvents[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
 end;
 
 procedure TGenericSubtitleFile.FixOverlapsBackward;
 var
   i: Integer;
 begin
-  for i := 0 to FDialogs.Count-1 do
-    if FDialogs[i].TimeSlice.Value.EndPos.ValueAsDouble
-    > FDialogs[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
-      FDialogs[i].TimeSlice.Value.EndPos.ValueAsDouble :=
-        FDialogs[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
+  for i := 0 to FEvents.Count-1 do
+    if FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble
+    > FEvents[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
+      FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble :=
+        FEvents[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
 end;
 
 constructor TGenericSubtitleFile.Create;
 begin
-  FDialogs := TGenericSubtitleDialogsList.Create(Self);
+  FEvents := TGenericSubtitleEventList.Create(Self);
 end;
 
 destructor TGenericSubtitleFile.Destroy;
 begin
-  if Assigned(FDialogs) then FDialogs.Free;
+  if Assigned(FEvents) then FEvents.Free;
   inherited Destroy;
 end;
 
