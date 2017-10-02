@@ -40,7 +40,7 @@ type
 
   { TCustomSubripFile }
 
-  TCustomSubripFile = specialize TGenericSubtitleFile<TPlainSubtitleDialog>;
+  TCustomSubripFile = specialize TGenericSubtitleFile<TPlainSubtitleEvent>;
 
   { TSubripFile }
 
@@ -62,7 +62,7 @@ procedure TSubripFile.LoadFromString(const AContents: String);
 var
   sa: TStringArray;
   sl: TStringList;
-  Dlg: TPlainSubtitleDialog;
+  Dlg: TPlainSubtitleEvent;
   i,j,k: Integer;
 begin
   if AContents = EmptyStr then Exit;
@@ -75,7 +75,7 @@ begin
   finally
     sl.Free;
   end;
-  Dialogs.Capacity := Length(sa) div 3;
+  Events.Capacity := Length(sa) div 3;
   i := 0;
   while i >= 0 do
   begin
@@ -91,7 +91,7 @@ begin
         Dlg.Text := Dlg.Text +sa[k] +LineEnding;
         Inc(k);
       until (k > High(sa)) or (k >= j-1);
-      Dialogs.Add(Dlg);
+      Events.Add(Dlg);
     end;
   end;
 end;
@@ -101,11 +101,11 @@ var
   i: Integer;
 begin
   AContents := EmptyStr;
-  for i := 0 to Dialogs.Count-1 do
+  for i := 0 to Events.Count-1 do
   begin
     AContents := AContents +(i+1).ToString +LineEnding
-    +Dialogs[i].TimeSlice.ValueAsString +LineEnding
-    +Dialogs[i].Text;
+    +Events[i].TimeSlice.ValueAsString +LineEnding
+    +Events[i].Text;
   end;
 end;
 
