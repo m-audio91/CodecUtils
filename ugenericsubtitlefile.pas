@@ -63,9 +63,11 @@ type
     function EventsInRange(ARange: TTimeSlice): TGenericSubtitleEvents;
   public
     procedure Cleanup; virtual;
-    procedure LoadFromFile(const AFileName: String);
+    procedure LoadFromFile(const AFileName: String); overload;
+    procedure LoadFromFile(const AFileName: String; AEncoding: TEncoding); overload;
     procedure LoadFromString(const AContents: String); virtual; abstract;
-    procedure SaveToFile(const AFileName: String);
+    procedure SaveToFile(const AFileName: String); overload;
+    procedure SaveToFile(const AFileName: String; AEncoding: TEncoding); overload;
     procedure SaveToString(out AContents: String); virtual; abstract;
     function MakeNewFromRanges(ARanges: TTimeSliceList; AFinalStartOffset
       : Double = 0): TGenericSubtitleEvents;
@@ -149,6 +151,20 @@ begin
   end;
 end;
 
+procedure TGenericSubtitleFile.LoadFromFile(const AFileName: String;
+  AEncoding: TEncoding);
+var
+  sl: TStringList;
+begin
+  sl := TStringList.Create;
+  try
+    sl.LoadFromFile(AFileName, AEncoding);
+    LoadFromString(sl.Text);
+  finally
+    sl.Free;
+  end;
+end;
+
 procedure TGenericSubtitleFile.SaveToFile(const AFileName: String);
 var
   sl: TStringList;
@@ -159,6 +175,22 @@ begin
   try
     sl.Text := s;
     sl.SaveToFile(AFileName);
+  finally
+    sl.Free;
+  end;
+end;
+
+procedure TGenericSubtitleFile.SaveToFile(const AFileName: String;
+  AEncoding: TEncoding);
+var
+  sl: TStringList;
+  s: String;
+begin
+  SaveToString(s);
+  sl := TStringList.Create;
+  try
+    sl.Text := s;
+    sl.SaveToFile(AFileName, AEncoding);
   finally
     sl.Free;
   end;
