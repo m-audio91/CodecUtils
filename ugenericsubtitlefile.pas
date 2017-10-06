@@ -189,6 +189,7 @@ begin
   SaveToString(s);
   sl := TStringList.Create;
   try
+    sl.DefaultEncoding := AEncoding;
     sl.Text := s;
     sl.SaveToFile(AFileName, AEncoding);
   finally
