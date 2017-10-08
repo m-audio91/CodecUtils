@@ -163,8 +163,8 @@ type
   TSubStationAlphaFile = class(TCustomSubStationAlphaFile)
   private
     FAlphaIsAdvanced: Boolean;
-    procedure ConvertToAdvancedAlpha;
-    procedure ConvertToOldAlpha;
+    procedure ConvertToAdvancedAlpha;  // ToDo: Extend these methods to convert alpha overrides as well (such as {\b0} etc)
+    procedure ConvertToOldAlpha;       // not safe currently. look at the above comment.
     procedure SetAdvanced(AValue: Boolean);
   public
     Infos: TAlphaInfoManager;
