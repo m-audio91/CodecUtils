@@ -250,22 +250,38 @@ procedure TGenericSubtitleFile.FixOverlapsForward;
 var
   i: Integer;
 begin
-  for i := FEvents.Count-1 downto 1 do
-    if FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble
-    < FEvents[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
-      FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble :=
-        FEvents[i-1].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
+  i := -1;
+  while i < FEvents.Count-2 do
+  begin
+    Inc(i);
+    if FEvents[i+1].TimeSlice.Value.StartPos.ValueAsDouble
+    < FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble then
+    begin
+      FEvents.PItems[i+1]^.TimeSlice.Value.StartPos.ValueAsDouble :=
+        FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble+0.001;
+      Cleanup;
+      i := -1;
+    end;
+  end;
 end;
 
 procedure TGenericSubtitleFile.FixOverlapsBackward;
 var
   i: Integer;
 begin
-  for i := 0 to FEvents.Count-1 do
-    if FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble
-    > FEvents[i+1].TimeSlice.Value.StartPos.ValueAsDouble then
-      FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble :=
-        FEvents[i+1].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
+  i := FEvents.Count;
+  while i > 1 do
+  begin
+    Dec(i);
+    if FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble
+    < FEvents[i-1].TimeSlice.Value.EndPos.ValueAsDouble then
+    begin
+      FEvents.PItems[i-1]^.TimeSlice.Value.EndPos.ValueAsDouble :=
+        FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble-0.001;
+      Cleanup;
+      i := FEvents.Count;
+    end;
+  end;
 end;
 
 constructor TGenericSubtitleFile.Create;
