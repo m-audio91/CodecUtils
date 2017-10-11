@@ -110,11 +110,13 @@ begin
   j := 0;
   for i := 0 to FEvents.Count-1 do
   begin
-    if ((FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble >= ARange.Value.StartPos.ValueAsDouble)
-      and (FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.EndPos.ValueAsDouble))
-    or ((FEvents[i].TimeSlice.Value.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble)
-      and (FEvents[i].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.StartPos.ValueAsDouble)) then
+    FEvents.PItems[i]^.TimeSlice.Delay := ARange.Delay;
+    if ((FEvents[i].TimeSlice.ValueWithDelay.StartPos.ValueAsDouble >= ARange.Value.StartPos.ValueAsDouble)
+      and (FEvents[i].TimeSlice.ValueWithDelay.StartPos.ValueAsDouble < ARange.Value.EndPos.ValueAsDouble))
+    or ((FEvents[i].TimeSlice.ValueWithDelay.StartPos.ValueAsDouble < ARange.Value.StartPos.ValueAsDouble)
+      and (FEvents[i].TimeSlice.ValueWithDelay.EndPos.ValueAsDouble > ARange.Value.StartPos.ValueAsDouble)) then
     begin
+      FEvents.PItems[i]^.TimeSlice.Delay := 0;
       Result[j] := FEvents[i];
       Inc(j);
     end;
