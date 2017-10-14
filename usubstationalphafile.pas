@@ -231,12 +231,21 @@ const
 
 function AlphaColorToFPColor(const C: String): TFPColor;
 begin
-  if (C.Length = 10) and (C.StartsWith('&H')) then
-    Result := FPColor(
-      Hex2Dec(C.Substring(8,2)),
-      Hex2Dec(C.Substring(6,2)),
-      Hex2Dec(C.Substring(4,2)),
-      Hex2Dec(C.Substring(2,2)))
+  if (C.StartsWith('&H')) then
+  begin
+    if (C.Length = 10) then
+      Result := FPColor(
+        Hex2Dec(C.Substring(8,2)),
+        Hex2Dec(C.Substring(6,2)),
+        Hex2Dec(C.Substring(4,2)),
+        Hex2Dec(C.Substring(2,2)))
+    else if (C.Length = 8) then
+      Result := FPColor(
+        Hex2Dec(C.Substring(6,2)),
+        Hex2Dec(C.Substring(4,2)),
+        Hex2Dec(C.Substring(2,2)),
+        0)
+  end
   else
     Result := FPColor(
       (C.ToInteger and $FF),
