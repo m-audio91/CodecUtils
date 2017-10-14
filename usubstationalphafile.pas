@@ -705,6 +705,8 @@ begin
 
   sa := AEvent.Substring(AEvent.IndexOf(' ')+1).Split(AlphaSep);
   if Length(sa) < 10 then Exit(False);
+  for i := 0 to 8 do
+    sa[i] := DelSpace(sa[i]);
 
   if sa[0].StartsWith(OldAlphaMarkers[0]) then
     LayerOrMarked := sa[0].Substring(OldAlphaMarkers[0].Length).ToInteger
