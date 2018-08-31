@@ -2,7 +2,7 @@ unit uSubStationAlphaFile;
 { SubStationAlpha file (ssa ver 4 and 4+ (ass)) decoder, encoder and more.
   written with GUI interaction in mind.
 
-  Copyright (C) 2017 Mohammadreza Bahrami m.audio91@gmail.com
+  Copyright (C) 2018 Mohammadreza Bahrami m.audio91@gmail.com
 
   This library is free software; you can redistribute it and/or modify it
   under the terms of the GNU Library General Public License as published by
@@ -181,8 +181,10 @@ function DefaultAlphaEvent: TAlphaEvent;
 //to translate alignment from two ComboBoxes, one for H pos (0=left, 1=center
 //, 2=right) and one for V pos(0=top, 1=center, 2=bottom) use the three following
 //fuctions but beaware these are assuming advanced alpha (v4.00+) style values
-//: 1..9.
-function HVAlignToAlphaAlign(AHorizontalValue, AVerticalValue: Integer): Integer;
+//by default: 1..9. you can change the third parameter to False to have ssa
+//(v4.00) align.
+function HVAlignToAlphaAlign(AHorizontalValue, AVerticalValue: Integer;
+  IsAdvanced: Boolean = True): Integer;
 function GetHorizontalAlign(AAlphaAlign: Integer): Integer;
 function GetVerticalAlign(AAlphaAlign: Integer): Integer;
 //additional alignment conversion functions
@@ -193,6 +195,8 @@ function AlphaAdvancedAlignToOldAlign(A: Integer): Integer;
 //a TSpinEdit with it's Min=0=>transparent and it's Max=100=>visible
 function FPColor(AColor: TColor; AALphaPercent: Integer): TFPColor; overload;
 function AlphaPercentFromFPColor(AColor: TFPColor): Integer;
+function AlphaColorToFPColor(const C: String): TFPColor;
+function FPColorToAlphaColor(const C: TFPColor; IsAdvanced: Boolean): String;
 
 
 implementation
@@ -300,10 +304,12 @@ end;
 
 function FPColor(AColor: TColor; AALphaPercent: Integer): TFPColor;
 begin
+  Result.blue := Blue(Cardinal(AColor));
+  Result.green := Green(Cardinal(AColor));
+  Result.red := Red(Cardinal(AColor));
   ForceInRange(AALphaPercent,0,100);
   AALphaPercent := ConvertInRange(AALphaPercent,0,100,0,255);
   AALphaPercent := 255-AALphaPercent;
-  Result := TColorToFPColor(AColor);
   Result.alpha := AALphaPercent;
 end;
 
@@ -363,34 +369,29 @@ begin
   end;
 end;
 
-function HVAlignToAlphaAlign(AHorizontalValue, AVerticalValue: Integer): Integer;
+function HVAlignToAlphaAlign(AHorizontalValue, AVerticalValue: Integer;
+  IsAdvanced: Boolean): Integer;
+var
+  v: Byte;
 begin
   ForceInRange(AHorizontalValue, 0, 2);
   ForceInRange(AVerticalValue, 0, 2);
-  Result := 2;
-  case AHorizontalValue of
-  0: begin
-      case AVerticalValue of
-      0: Result := 7;
-      1: Result := 4;
-      2: Result := 1;
-      end;
+  v := 1;
+  if IsAdvanced then
+  begin
+    case AVerticalValue of
+    0: v := 7;
+    1: v := 4;
     end;
-  1: begin
-      case AVerticalValue of
-      0: Result := 8;
-      1: Result := 5;
-      2: Result := 2;
-      end;
-    end;
-  2: begin
-      case AVerticalValue of
-      0: Result := 9;
-      1: Result := 6;
-      2: Result := 3;
-      end;
+  end
+  else
+  begin
+    case AVerticalValue of
+    0: v := 5;
+    1: v := 9;
     end;
   end;
+  Result := AHorizontalValue+v;
 end;
 
 function GetHorizontalAlign(AAlphaAlign: Integer): Integer;
