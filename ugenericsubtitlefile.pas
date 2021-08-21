@@ -62,6 +62,7 @@ type
   private
     function EventsInRange(ARange: TTimeSlice): TGenericSubtitleEvents;
   public
+    procedure Clear;
     procedure Cleanup; virtual;
     procedure LoadFromFile(const AFileName: String); overload;
     procedure LoadFromFile(const AFileName: String; AEncoding: TEncoding); overload;
@@ -129,6 +130,11 @@ begin
     else if Result[i].TimeSlice.Value.EndPos.ValueAsDouble > ARange.Value.EndPos.ValueAsDouble then
       Result[i].TimeSlice.Value.EndPos.Value := ARange.Value.EndPos.Value;
   end;
+end;
+
+procedure TGenericSubtitleFile.Clear;
+begin
+  FEvents.Clear;
 end;
 
 procedure TGenericSubtitleFile.Cleanup;
