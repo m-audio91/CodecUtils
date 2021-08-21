@@ -34,7 +34,8 @@ unit uSubripFile;
 interface
 
 uses
-  Classes, SysUtils, CommonStrUtils, uGenericSubtitleFile;
+  Classes, SysUtils, CommonStrUtils, CommonGenericLists, uTimeSlice,
+  uGenericSubtitleFile;
 
 type
 
@@ -60,39 +61,49 @@ const
 
 procedure TSubripFile.LoadFromString(const AContents: String);
 var
-  sa: TStringArray;
+  il: TIntegerList;
   sl: TStringList;
   Dlg: TPlainSubtitleEvent;
-  i,j,k: Integer;
+  i,j: Integer;
 begin
-  if AContents = EmptyStr then Exit;
-  if AContents.IndexOf(SubripTimeSliceSep) < 0 then Exit;
+  Clear;
+  if IsEmptyStr(AContents) or (AContents.IndexOf(SubripTimeSliceSep)<0) then Exit;
+  il := TIntegerList.Create;
   sl := TStringList.Create;
+  Dlg.TimeSlice.Initialize(TimeSlice.TimeSliceFormat);
   try
     sl.Text := AContents.TrimLeft;
     if sl.Count < 3 then Exit;
-    sa := StringListToArray(sl);
-  finally
-    sl.Free;
-  end;
-  Events.Capacity := Length(sa) div 3;
-  i := 0;
-  while i >= 0 do
-  begin
-    i := FindInArray(sa, SubripTimeSliceSep, i+1);
-    if i >= 0 then
+    il.Capacity := sl.Count div 3;
+    Events.Capacity := sl.Count div 3;
+    for i:=0 to sl.Count-1 do
     begin
-      TimeSlice.ValueAsString := sa[i];
-      Dlg.TimeSlice := TimeSlice;
-      Dlg.Text := EmptyStr;
-      k := i+1;
-      j := FindInArray(sa, SubripTimeSliceSep, k);
-      repeat
-        Dlg.Text := Dlg.Text +sa[k] +LineEnding;
-        Inc(k);
-      until (k > High(sa)) or (k >= j-1);
-      Events.Add(Dlg);
+      if sl[i].Contains(SubripTimeSliceSep) then
+      begin
+        Dlg.TimeSlice.ValueAsString := sl[i];
+        if Dlg.TimeSlice.Valid then
+          il.Add(i);
+      end;
     end;
+    for i:=0 to il.Count-2 do
+    begin
+      if (il[i+1]-1)-il[i]>1 then
+      begin
+        Dlg.TimeSlice.ValueAsString := sl[il[i]];
+        Dlg.Text := EmptyStr;
+        for j:=il[i]+1 to il[i+1]-2 do
+          Dlg.Text := Dlg.Text + sl[j] +LineEnding;
+        Events.Add(Dlg);
+      end;
+    end;
+    Dlg.TimeSlice.ValueAsString := sl[il[il.Count-1]];
+    Dlg.Text := EmptyStr;
+    for j:=il[il.Count-1]+1 to sl.Count-1 do
+      Dlg.Text := Dlg.Text + sl[j] +LineEnding;
+    Events.Add(Dlg);
+  finally
+    il.Free;
+    sl.Free;
   end;
 end;
 
