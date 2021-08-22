@@ -52,10 +52,24 @@ type
     constructor Create; override;
   end;
 
-implementation
-
 const
   SubripTimeSliceSep = ' --> ';
+
+function DefaultSubripTimeSliceFormat: TTimeSliceFormatSettings;
+
+implementation
+
+
+function DefaultSubripTimeSliceFormat: TTimeSliceFormatSettings;
+begin
+  with Result do
+  begin
+    TimeCodes.MillisecondPrecision := 3;
+    TimeCodes.MajorSep := ':';
+    TimeCodes.MinorSep := ',';
+    SliceSep := SubripTimeSliceSep;
+  end;
+end;
 
 { TSubripFile }
 
@@ -123,7 +137,7 @@ end;
 constructor TSubripFile.Create;
 begin
   inherited Create;
-  TimeSlice.Initialize(3, ':', ',', SubripTimeSliceSep);
+  TimeSlice.Initialize(DefaultSubripTimeSliceFormat);
 end;
 
 end.
