@@ -67,6 +67,9 @@ begin
     TimeCodes.MillisecondPrecision := 3;
     TimeCodes.MajorSep := ':';
     TimeCodes.MinorSep := ',';
+    SourceFPS := 0;
+    HasFrame := False;
+    IsFrame := False;
     SliceSep := SubripTimeSliceSep;
   end;
 end;
